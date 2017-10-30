@@ -1,0 +1,10 @@
+[package]
+name = "scene_tree"
+version = "0.1.0"
+authors = ["Siebencorgie <siebencorgie@googlemail.com>"]
+
+[dependencies]
+
+[[example]]
+name = "store_and_read"
+path = "examples/src/store_and_read.rs"

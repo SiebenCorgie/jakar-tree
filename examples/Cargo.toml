@@ -1,0 +1,9 @@
+[package]
+name = "scene_tree_example"
+version = "0.1.0"
+authors = ["Siebencorgie <siebencorgie@googlemail.com>"]
+
+[dependencies]
+
+scene_tree = { path = "../" }
+
