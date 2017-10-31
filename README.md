@@ -15,8 +15,23 @@ updated at a defined time and only has to work with each ndoe once.
 My old system was updating the system at each call which can become quiet expensive if you got many jobs per frame.
 
 ## How fast is it?
-Well, I tested the system with ~50 nodes at two levels. The average getting process per node was around 500 nano seconds, 
-which is okay I guess, at least for a single threaded system.
+Well, I tested the system with ~50 nodes at two levels. The average getting process per node was around 500 nano seconds (on a
+Ryzen 1700x @ 3.4 GHz), which is okay I guess, at least for a single threaded system.
 
 ## Where should it be used?
 I am currently using it in a gema engien. However, the base structs and traits (`node` and `tree`) can be used everywhere.
+
+## How do I test?
+The easiest way is to clone the repository and run in either debug or release mode:
+```
+$ git clone https://github.com/SiebenCorgie/jakar-tree.git
+$ cd jakar-tree/
+```
+for release mode do:
+```
+$ cargo run --example store_and_read --release
+```
+for debug mode do:
+```
+cargo run --example store_and_read
+```
