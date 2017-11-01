@@ -23,7 +23,7 @@ impl std::string::ToString for NodeErrors{
 
 ///Describes a tree which can hold nodes of the type T.
 /// The tree also holds a registry of all its values with its paths.
-pub struct Tree<T: node::NodeContent>{
+pub struct Tree<T: node::NodeContent, J: Clone, A: node::Attribute<J>>{
     ///Stores the path to every node of this tree, keyed by the nodes name.
     /// For instance a data set could look like this:
     ///
@@ -32,16 +32,16 @@ pub struct Tree<T: node::NodeContent>{
     /// In this case the teddy is At the root nodes child "Cave", which has a child LeftSide, which has the child Teddy
     pub registry: BTreeMap<String, PathBuf>,
     ///The root node of this tree
-    pub root_node: node::Node<T>,
+    pub root_node: node::Node<T, J, A>,
 }
 
 ///Implements the base functions of `Tree`
-impl<T: node::NodeContent> Tree<T> {
+impl<T: node::NodeContent, J: Clone, A: node::Attribute<J>> Tree<T, J, A> {
 
-    ///Creates a new tree with an `root` node
-    pub fn new(root: T) -> Self{
+    ///Creates a new tree with an `root` node with set `attributes`
+    pub fn new(root: T, root_attributes: A) -> Self{
 
-        let root_node = node::Node::new(root);
+        let root_node = node::Node::new(root, root_attributes);
         let mut registry = BTreeMap::new();
         //add the root node to the registry
         registry.insert("_root".to_string(), PathBuf::from("/".to_string()));
@@ -53,9 +53,12 @@ impl<T: node::NodeContent> Tree<T> {
     }
 
 
-    ///Adds a `new_child` at a `parent` node. Returns the name under which it was addded as `Ok(name)`
+    ///Adds a `new_child` at a `parent` node with `Some(attributes` set
+    /// (or the default attributes if None is supplied).
+    /// Returns the name under which it was addded as `Ok(name)`
     /// or an `Err(e)` if something went wrong.
-    pub fn add(&mut self, new_child: T, parent_name: String)-> Result<String, NodeErrors>{
+    pub fn add(&mut self, new_child: T, parent_name: String, attributes: Option<A>)->
+    Result<String, NodeErrors>{
         //First we have to get the node in this tree with the searched name.
         // If this is successful, we test the new_child's name for being unique.
         // If not, we change the name to something unique for the `T`.
@@ -114,7 +117,16 @@ impl<T: node::NodeContent> Tree<T> {
         match self.get_from_path(&parent_path){
             Ok(k) => {
                 //we got the right parent, going to add the child to it
-                k.add_with_name(new_child, unique_name.clone());
+                //but before adding we have to decide if we can take the supplied attributes or
+                // if we have to create a set of default ones.
+                let atrib = {
+                    match attributes{
+                        Some(atr) => atr,
+                        None => A::default(),
+                    }
+                };
+
+                k.add_with_name(new_child, unique_name.clone(), atrib);
             },
             //Otherwise return with an error
             Err(e) => {
@@ -132,7 +144,7 @@ impl<T: node::NodeContent> Tree<T> {
     }
 
     ///Returns a mutable reference to a child by its `path`
-    pub fn get_from_path(&mut self, path: &PathBuf) -> Result<&mut node::Node<T>, NodeErrors>{
+    pub fn get_from_path(&mut self, path: &PathBuf) -> Result<&mut node::Node<T, J, A>, NodeErrors>{
         //To get a node we walk down the path by searching (.pop()) for the last element of the vector
         //which we get by transforming the path into custom_path_iter().
         //the node get the changes path (one item smaller) and searches in its own nodes for a node
@@ -151,7 +163,7 @@ impl<T: node::NodeContent> Tree<T> {
     }
 
     ///Returns a node with this `name`
-    pub fn get_node(&mut self, name: String) -> Option<&mut node::Node<T>>{
+    pub fn get_node(&mut self, name: String) -> Option<&mut node::Node<T, J, A>>{
         //get the nodes path, if there is such a node, return it as Some(T) else return None
         let path = {
             match self.registry.get(&name){

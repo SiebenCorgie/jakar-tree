@@ -1,21 +1,21 @@
 use std::time::{Instant, Duration};
 extern crate scene_tree;
 use scene_tree::*;
-
+use scene_tree::node::Attribute;
 
 
 fn main() {
 
     //the root
-    let root = node::DefaultContent::Light("RootNode".to_string());
+    let root = game_tree::DefaultContent::Light("RootNode".to_string());
 
     // adding a tree
-    let mut tree = tree::Tree::new(root);
+    let mut tree = tree::Tree::new(root, game_tree::SceneAttribute::default());
 
     //now adding some stuff to "RootNode"
     let things = vec!["Mesh", "Teddy", "other_stuff", "Test"];
     for thing in things.iter(){
-        tree.add(node::DefaultContent::Mesh(thing.to_string()), "_root".to_string());
+        tree.add(game_tree::DefaultContent::Mesh(thing.to_string()), "_root".to_string(), Some(game_tree::SceneAttribute::default()));
     }
 
     //Also add some children to them by some more names
@@ -24,7 +24,7 @@ fn main() {
         //get the node of thing and add a sub_thing to it
         for sub in sub_things.iter(){
             let new_name = thing.to_string() + "_" + sub;
-            tree.add(node::DefaultContent::Mesh(new_name), thing.to_string());
+            tree.add(game_tree::DefaultContent::Mesh(new_name), thing.to_string(), Some(game_tree::SceneAttribute::default()));
         }
     }
 
