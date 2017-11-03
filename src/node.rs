@@ -132,7 +132,10 @@ impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
 
 
     ///Prints self and then all children a level down and so on, creates a nice tree print out
-    pub fn print_debug(&self, lvl: i32){
+    pub fn print_debug(&self, lvl: i32, counter: &mut u32){
+
+        *counter = *counter + 1;
+
         //print self then go though all children
         for _ in 0..lvl{
             //print the tabs for self
@@ -146,7 +149,7 @@ impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
 
         //no go though children
         for (_, child) in self.children.iter(){
-            child.print_debug(lvl + 1);
+            child.print_debug(lvl + 1, counter);
         }
     }
 

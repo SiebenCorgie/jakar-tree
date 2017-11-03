@@ -196,7 +196,11 @@ impl<T: node::NodeContent, J: Clone, A: node::Attribute<J>> Tree<T, J, A> {
     pub fn print_tree(&self){
         //init the base level then go though all children of the root node
         let level = 0;
-        self.root_node.print_debug(level);
+        let mut node_count = 0;
+        self.root_node.print_debug(level, &mut node_count);
+
+        println!("There are {} nodes in the tree!", node_count);
+
     }
 
     //prints the current registry
@@ -237,7 +241,5 @@ fn custom_path_iter(path: &PathBuf) -> Vec<String>{
         //now pop out the parent for the next one
         is_some = mut_parents.pop();
     }
-    println!("Vec atm: {:?}", wrong_way_vec);
-
     wrong_way_vec
 }

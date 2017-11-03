@@ -13,13 +13,13 @@ fn main() {
     let mut tree = tree::Tree::new(root, game_tree::SceneAttribute::default());
 
     //now adding some stuff to "RootNode"
-    let things = vec!["Mesh", "Teddy", "other_stuff", "Test"];
+    let things = vec!["Mesh", "Teddy", "other_stuff", "Test", "Moor", "More", "Stuff", "To", "Tetzt"];
     for thing in things.iter(){
         tree.add(game_tree::DefaultContent::Mesh(thing.to_string()), "_root".to_string(), Some(game_tree::SceneAttribute::default()));
     }
 
     //Also add some children to them by some more names
-    let sub_things = vec!["Subby", "TheThird", "Saeft", "MyPeopleNeedMe", "Oi"];
+    let sub_things = vec!["Subby", "TheThird", "Saeft", "MyPeopleNeedMe", "Oi", "And ", "Some", "more", "low", "level"];
     for thing in things.iter(){
         //get the node of thing and add a sub_thing to it
         for sub in sub_things.iter(){
@@ -27,11 +27,6 @@ fn main() {
             tree.add(game_tree::DefaultContent::Mesh(new_name), thing.to_string(), Some(game_tree::SceneAttribute::default()));
         }
     }
-
-    //npow print
-    println!("ATM ==========", );
-    tree.print_tree();
-
 
     match tree.get_node("Test".to_string()){
         Some(n) => n.add_job(game_tree::Jobs::Translate([1.0, 0.0, 0.25])),
@@ -47,5 +42,5 @@ fn main() {
     tree.update();
     let time_needed = start_time.elapsed().subsec_nanos() as f32 / 1_000_000_000.0;
     println!("Time 01: {}", time_needed);
-
+    tree.print_tree();
 }
