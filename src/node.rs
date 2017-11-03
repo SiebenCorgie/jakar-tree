@@ -125,6 +125,11 @@ impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
         }
     }
 
+    ///Adds a job to this node
+    pub fn add_job(&mut self, job: J){
+        self.jobs.push(job);
+    }
+
 
     ///Prints self and then all children a level down and so on, creates a nice tree print out
     pub fn print_debug(&self, lvl: i32){

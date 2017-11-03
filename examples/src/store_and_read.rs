@@ -29,14 +29,22 @@ fn main() {
     }
 
     //npow print
+    println!("ATM ==========", );
     tree.print_tree();
 
-    //print the paths
-    tree.print_registry();
 
-    //getting a thing in time
+    match tree.get_node("Test".to_string()){
+        Some(n) => n.add_job(game_tree::Jobs::Translate([1.0, 0.0, 0.25])),
+        None => {}
+    }
+
+
+    match tree.get_node("Test_MyPeopleNeedMe".to_string()){
+        Some(n) => n.add_job(game_tree::Jobs::Rotate([0.01, 0.0, 0.35])),
+        None => {}
+    }
     let start_time = Instant::now();
-    let thiungy = tree.get_node("Test_Oi".to_string());
+    tree.update();
     let time_needed = start_time.elapsed().subsec_nanos() as f32 / 1_000_000_000.0;
     println!("Time 01: {}", time_needed);
 

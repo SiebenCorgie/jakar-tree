@@ -143,8 +143,13 @@ impl<T: node::NodeContent, J: Clone, A: node::Attribute<J>> Tree<T, J, A> {
         Err(NodeErrors::NoSuchChild(String::from("teddy")))
     }
 
+    ///Updates the whole tree
+    pub fn update(&mut self){
+        self.root_node.update(&Vec::new());
+    }
+
     ///Returns a mutable reference to a child by its `path`
-    pub fn get_from_path(&mut self, path: &PathBuf) -> Result<&mut node::Node<T, J, A>, NodeErrors>{
+    fn get_from_path(&mut self, path: &PathBuf) -> Result<&mut node::Node<T, J, A>, NodeErrors>{
         //To get a node we walk down the path by searching (.pop()) for the last element of the vector
         //which we get by transforming the path into custom_path_iter().
         //the node get the changes path (one item smaller) and searches in its own nodes for a node
