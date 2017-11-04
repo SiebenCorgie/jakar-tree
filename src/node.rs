@@ -2,16 +2,18 @@ use std::collections::BTreeMap;
 use tree;
 
 
-
-///Attributes of an object can be anything. But they must be able to perform the Jobs `J`
+///Attributes of an object can be anything. But they must be able to perform the Jobs `J` and to compare them self to C
 pub trait Attribute<J: Clone> {
+    ///The type used to comapre attributes with each other
+    type Comparer;
     ///Creates a default attribute set
     fn default() -> Self;
     ///Execute the `job` on `self`.
     fn execute(&mut self, job: &J);
     ///Should print the content of self in an readable form.
     fn print_atr(&self, lvl: i32);
-
+    ///Returns true if `self` matches the supplied `attributes`
+    fn compare(&self, attributes: &Self::Comparer) -> bool;
 }
 
 ///Each type which implements `NodeContent` can be stored in a `Node`.
@@ -44,7 +46,6 @@ pub struct Node<T: NodeContent, J: Clone, A: Attribute<J>> {
 }
 
 impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
-
     ///Create a new node from a `value` and an `attribute`, returns this node.
     ///The name is retriefed from the nodes `get_name()` function.
     /// #unsave
@@ -133,7 +134,7 @@ impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
 
     ///Prints self and then all children a level down and so on, creates a nice tree print out
     pub fn print_debug(&self, lvl: i32, counter: &mut u32){
-
+        //still need the dereferencing :/
         *counter = *counter + 1;
 
         //print self then go though all children

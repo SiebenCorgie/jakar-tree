@@ -6,6 +6,18 @@ pub enum DefaultContent {
     Light(String),
 }
 
+
+///A sample struct to show how a comapre sequenz can be cosntructed at the `attributes` implementation
+/// for the `comapre()` funtion.
+pub struct DefaultComparer {
+    //if position should be compared this can be Some() else it will be ignored
+    position: Option<[f32; 3]>,
+    //if rotation should be compared this can be Some() else it will be ignored
+    rotation: Option<[f32; 3]>,
+    //if scale should be compared this can be Some() else it will be ignored
+    scale: Option<f32>,
+}
+
 ///Some `DefaultContent` specific funtions
 impl DefaultContent{
     ///returns Some(Mesh) if self is a mesh or none if not
@@ -67,6 +79,7 @@ pub struct SceneAttribute {
 }
 
 impl node::Attribute<Jobs> for SceneAttribute{
+    type Comparer = DefaultComparer;
 
     fn default() -> Self{
         SceneAttribute{
@@ -110,5 +123,22 @@ impl node::Attribute<Jobs> for SceneAttribute{
             print!("\t");
         }
         println!("\tscale: {}", self.scale);
+    }
+
+    fn compare(&self, comp: &Self::Comparer) -> bool{
+        let mut status = true;
+        //position
+        match comp.position{
+            Some(pos) => {
+                if pos != self.position{
+                    status = false;
+                }
+            },
+            None => {}
+        }
+
+        //scale
+        status
+
     }
 }
