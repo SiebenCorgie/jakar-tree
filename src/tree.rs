@@ -53,7 +53,7 @@ impl<T: node::NodeContent, J: Clone, A: node::Attribute<J>> Tree<T, J, A> {
     }
 
 
-    ///Adds a `new_child` at a `parent` node with `Some(attributes` set
+    ///Adds a `new_child` at a `parent` node with `Some(attributes)` set
     /// (or the default attributes if None is supplied).
     /// Returns the name under which it was addded as `Ok(name)`
     /// or an `Err(e)` if something went wrong.
