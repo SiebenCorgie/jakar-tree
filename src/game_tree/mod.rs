@@ -8,7 +8,7 @@ pub enum DefaultContent {
 
 
 ///A sample struct to show how a comapre sequenz can be cosntructed at the `attributes` implementation
-/// for the `comapre()` funtion.
+/// for the `compare()` funtion.
 pub struct DefaultComparer {
     //if position should be compared this can be Some() else it will be ignored
     position: Option<[f32; 3]>,
