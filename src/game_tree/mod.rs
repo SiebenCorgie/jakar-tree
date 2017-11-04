@@ -136,6 +136,25 @@ impl node::Attribute<Jobs> for SceneAttribute{
             },
             None => {}
         }
+        //rotation
+        match comp.rotation{
+            Some(rot) => {
+                if rot != self.rotation{
+                    status = false;
+                }
+            },
+            None => {}
+        }
+        //scale
+        match comp.scale{
+            Some(sca) => {
+                if sca != self.scale{
+                    status = false;
+                }
+            },
+            None => {}
+        }
+
 
         //scale
         status
