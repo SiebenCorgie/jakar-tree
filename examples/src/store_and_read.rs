@@ -1,7 +1,7 @@
 use std::time::{Instant};
-extern crate scene_tree;
-use scene_tree::*;
-use scene_tree::node::Attribute;
+extern crate jakar_tree;
+use jakar_tree::*;
+use jakar_tree::node::Attribute;
 
 
 fn main() {

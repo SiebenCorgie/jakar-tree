@@ -1,5 +1,5 @@
 [package]
-name = "scene_tree"
+name = "jakar_tree"
 version = "0.5.0"
 authors = ["Siebencorgie <siebencorgie@googlemail.com>"]
 
