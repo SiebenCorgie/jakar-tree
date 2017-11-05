@@ -131,6 +131,11 @@ impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
         self.jobs.push(job);
     }
 
+    ///Immidiatly executes this job onto the node, usually used when setting up a node with default settings.
+    pub fn job_exec(&mut self, job: J){
+        self.attributes.execute(&job);
+    }
+
 
     ///Prints self and then all children a level down and so on, creates a nice tree print out
     pub fn print_debug(&self, lvl: i32, counter: &mut u32){
