@@ -27,8 +27,6 @@ pub trait Attribute<J: Clone> {
 pub trait NodeContent {
     ///Should return the name of this content
     fn get_name(&self) -> String;
-    /// Returns the bounds of this objects
-    fn get_bounds(&self) -> ([f32;3] , [f32;3]);
 }
 
 ///Describes a node for a `Tree`. Each Node can have child nodes as well as ONE value.
@@ -158,5 +156,4 @@ impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
             child.print_debug(lvl + 1, counter);
         }
     }
-
 }
