@@ -47,18 +47,6 @@ impl node::NodeContent for DefaultContent{
             }
         }
     }
-
-    /// Returns the bounds of this objects
-    fn get_bounds(&self) -> ([f32;3] , [f32;3]){
-        match self {
-            &DefaultContent::Mesh(_) =>{
-                ([0.0; 3], [1.0; 3])
-            }
-            &DefaultContent::Light(_) =>{
-                ([0.0; 3], [1.0; 3])
-            }
-        }
-    }
 }
 
 
