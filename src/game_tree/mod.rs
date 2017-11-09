@@ -106,20 +106,20 @@ impl node::Attribute<Jobs> for SceneAttribute{
     }
 
     fn print_atr(&self, lvl: i32){
-        for _ in 0..lvl{
+        for _ in 0..lvl + 1{
             print!("\t");
         }
         println!("Attributes:", );
-        for _ in 0..lvl{
+        for _ in 0..lvl + 1{
             print!("\t");
         }
         println!("\tposition: {:?}", self.position);
-        for _ in 0..lvl{
+        for _ in 0..lvl + 1{
             print!("\t");
         }
         println!("\trotation: {:?}", self.rotation);
 
-        for _ in 0..lvl{
+        for _ in 0..lvl + 1{
             print!("\t");
         }
         println!("\tscale: {}", self.scale);
