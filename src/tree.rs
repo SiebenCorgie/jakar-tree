@@ -23,7 +23,7 @@ impl std::string::ToString for NodeErrors{
 
 ///Describes a tree which can hold nodes of the type T.
 /// The tree also holds a registry of all its values with its paths.
-pub struct Tree<T: node::NodeContent, J: Clone, A: node::Attribute<J>>{
+pub struct Tree<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone>{
     ///Stores the path to every node of this tree, keyed by the nodes name.
     /// For instance a data set could look like this:
     ///
@@ -36,7 +36,7 @@ pub struct Tree<T: node::NodeContent, J: Clone, A: node::Attribute<J>>{
 }
 
 ///Implements the base functions of `Tree`
-impl<T: node::NodeContent, J: Clone, A: node::Attribute<J>> Tree<T, J, A> {
+impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree<T, J, A> {
 
     ///Creates a new tree with an `root` node with set `attributes`
     pub fn new(root: T, root_attributes: A) -> Self{
@@ -137,10 +137,9 @@ impl<T: node::NodeContent, J: Clone, A: node::Attribute<J>> Tree<T, J, A> {
 
         //if we got to this point we can be sure that we have a unique name and
         // the right parent node.So we can add the path to the registry.
-        self.registry.insert(unique_name, new_path);
+        self.registry.insert(unique_name.clone(), new_path);
 
-        //TODO REMOVE
-        Err(NodeErrors::NoSuchChild(String::from("teddy")))
+        Ok(unique_name)
     }
 
     ///Updates the whole tree
@@ -186,10 +185,38 @@ impl<T: node::NodeContent, J: Clone, A: node::Attribute<J>> Tree<T, J, A> {
         }
     }
 
-
     ///Returns true if this Tree contains a node with this name
     pub fn has_node(&self, node_name: &str) -> bool{
         self.registry.contains_key(&String::from(node_name))
+    }
+
+
+    ///Merges `tree` into `self` leaving `tree` empty at the node with a `name`. Returns Ok(k) if
+    /// everything went all right or Err(e) if something went wrong.
+    pub fn join(&mut self, tree: &Self, name: String) -> Result<(),NodeErrors>{
+
+        /*TODO
+        Implement a take() - T for nodes, then a recursive functions which adds self
+        to the tree after checking the name, then adds all children to self
+        the returns
+        NOTE we can actually use the from add() returned string as the new parent name when
+        going through the children
+        */
+
+        //Try to get the root node, add it at "name", get the actual returning name, add the children there etc
+        let new_root_name = {
+            match self.add(
+               tree.root_node.value.clone(), name, Some(tree.root_node.attributes.clone())
+           ){
+               Ok(new_name) => new_name,
+               Err(r) => return Err(r),
+           }
+       };
+
+
+
+        //now for all root children, add them to the "new_root_name" and redo the procedure
+        tree.root_node.join(self, new_root_name)
     }
 
     ///Prints a debug tree of the things in this tree

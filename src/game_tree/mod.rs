@@ -1,6 +1,7 @@
 use node;
 
 ///A sample implementation of NodeContent
+#[derive(Clone)]
 pub enum DefaultContent {
     Mesh(String),
     Light(String),
@@ -9,6 +10,7 @@ pub enum DefaultContent {
 
 ///A sample struct to show how a comapre sequenz can be cosntructed at the `attributes` implementation
 /// for the `compare()` funtion.
+#[derive(Clone)]
 pub struct DefaultComparer {
     //if position should be compared this can be Some() else it will be ignored
     position: Option<[f32; 3]>,
@@ -60,6 +62,7 @@ pub enum Jobs {
 }
 
 ///Some example attribte a node can have
+#[derive(Clone)]
 pub struct SceneAttribute {
     pub position: [f32; 3],
     pub rotation: [f32; 3],

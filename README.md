@@ -9,7 +9,7 @@ The tree struct has a `BTreeMap` which holds the path to a ndoe, keyed by its na
 the system can go the "perfect" way to the node.
 
 ### Jobs
-I plan to a add a "Job" system. The idea is, to be able to add jobs like "Move by 50 units in the x direction" to a node. When the 
+I plan to a add a "Job" system. The idea is, to be able to add jobs like "Move by 50 units in the x direction" to a node. When the
 `update()` funtion is called, the node applies this operation/job and promotes it down to its children. This way the hierachie get
 updated at a defined time and only has to work with each ndoe once.
 My old system was updating the system at each call which can become quiet expensive if you got many jobs per frame.
@@ -29,9 +29,9 @@ $ cd jakar-tree/
 ```
 for release mode do:
 ```
-$ cargo run --example store_and_read --release
+$ cargo run --example simple --release
 ```
 for debug mode do:
 ```
-cargo run --example store_and_read
+cargo run --example simple
 ```

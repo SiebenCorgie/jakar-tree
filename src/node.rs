@@ -30,7 +30,8 @@ pub trait NodeContent {
 }
 
 ///Describes a node for a `Tree`. Each Node can have child nodes as well as ONE value.
-pub struct Node<T: NodeContent, J: Clone, A: Attribute<J>> {
+#[derive(Clone)]
+pub struct Node<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
     ///The name of this node
     pub name: String,
     ///The value of this node
@@ -43,7 +44,7 @@ pub struct Node<T: NodeContent, J: Clone, A: Attribute<J>> {
     pub attributes: A,
 }
 
-impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
+impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
     ///Create a new node from a `value` and an `attribute`, returns this node.
     ///The name is retriefed from the nodes `get_name()` function.
     /// #unsave
@@ -76,7 +77,7 @@ impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
     }
 
     ///Returns the an `Ok(&mut Node)` at `path` if there is one at this location, or `Err()` if not.
-    pub fn get_node(&mut self, path: &mut Vec<String>) -> Result<&mut Node<T,J,A>, tree::NodeErrors> {
+    pub fn get_node(&mut self, path: &mut Vec<String>) -> Result<&mut Self, tree::NodeErrors> {
         //get the name of the child we are searching for if we get an `None` from the pop(),
         // it means we reached the last child, so we return the node with this name as &mut T
         // otherwise we search in the node with the name optained from pop() for the node ref.
@@ -134,6 +135,37 @@ impl<T: NodeContent, J:  Clone, A: Attribute<J>> Node<T, J, A>{
         self.attributes.execute(&job);
     }
 
+    ///Takes self's values and constructs a new node in the new `parent_tree` tree at the `parent_node`.
+    /// Then adds its children to the new returned node.
+
+    /// # Note
+    /// if there is an error while adding self, no further children will be added
+    pub fn join(&self, parent_tree: &mut tree::Tree<T, J, A>, parent_node: String)
+    -> Result<(), tree::NodeErrors>{
+        //first of all we need to add self to the new parent tree. This is necessary to keep the
+        // current hierachy.
+        let new_name =
+        match parent_tree.add(
+            self.value.clone(), parent_node, Some(self.attributes.clone())
+        ){
+            Ok(new_n) => new_n,
+            Err(er) => return Err(er),
+        };
+
+
+
+        for (_, child) in self.children.iter(){
+            //now pass the new name together with the tree down
+            let adding_status = child.join(parent_tree, new_name.clone());
+            //return the error if something went wrong
+            match adding_status{
+                Ok(_) => {},
+                Err(r) => return Err(r),
+            }
+        }
+
+        Ok(())
+    }
 
     ///Prints self and then all children a level down and so on, creates a nice tree print out
     pub fn print_debug(&self, lvl: i32, counter: &mut u32){
