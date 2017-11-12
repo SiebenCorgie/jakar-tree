@@ -23,6 +23,7 @@ impl std::string::ToString for NodeErrors{
 
 ///Describes a tree which can hold nodes of the type T.
 /// The tree also holds a registry of all its values with its paths.
+#[derive(Clone)]
 pub struct Tree<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone>{
     ///Stores the path to every node of this tree, keyed by the nodes name.
     /// For instance a data set could look like this:
