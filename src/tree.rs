@@ -25,6 +25,11 @@ impl std::string::ToString for NodeErrors{
 /// The tree also holds a registry of all its values with its paths.
 #[derive(Clone)]
 pub struct Tree<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone>{
+
+    ///The name of this tree. It is usally derived from the name of the root node supplyied to
+    //the `new()` function. But you can chagne the name without breaking anythign if you want.
+    pub name: String,
+
     ///Stores the path to every node of this tree, keyed by the nodes name.
     /// For instance a data set could look like this:
     ///
@@ -42,12 +47,14 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
     ///Creates a new tree with an `root` node with set `attributes`
     pub fn new(root: T, root_attributes: A) -> Self{
 
+        let tree_name = root.get_name();
         let root_node = node::Node::new(root, root_attributes);
         let mut registry = BTreeMap::new();
         //add the root node to the registry
         registry.insert("_root".to_string(), PathBuf::from("/".to_string()));
 
         Tree{
+            name: tree_name,
             registry: registry,
             root_node: root_node,
         }
