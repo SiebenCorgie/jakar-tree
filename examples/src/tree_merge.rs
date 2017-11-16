@@ -15,7 +15,7 @@ fn main() {
     //now adding some stuff to "RootNode"
     let one_things = vec!["One_One", "One_Two", "One_Three"];
     for thing in one_things.iter(){
-        let _ = one_tree.add(game_tree::DefaultContent::Mesh(thing.to_string()), "_root".to_string(), Some(game_tree::SceneAttribute::default()));
+        let _ = one_tree.add_at_root(game_tree::DefaultContent::Mesh(thing.to_string()), Some(game_tree::SceneAttribute::default()));
     }
 
     //Also add some children to them by some more names
@@ -38,7 +38,7 @@ fn main() {
     //now adding some stuff to "RootNode"
     let two_things = vec!["two_One", "two_Two", "two_Three"];
     for thing in one_things.iter(){
-        let _ = two_tree.add(game_tree::DefaultContent::Mesh(thing.to_string()), "_root".to_string(), Some(game_tree::SceneAttribute::default()));
+        let _ = two_tree.add_at_root(game_tree::DefaultContent::Mesh(thing.to_string()), Some(game_tree::SceneAttribute::default()));
     }
 
     //Also add some children to them by some more names
