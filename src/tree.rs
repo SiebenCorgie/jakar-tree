@@ -51,7 +51,7 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
         let root_node = node::Node::new(root, root_attributes);
         let mut registry = BTreeMap::new();
         //add the root node to the registry
-        registry.insert("_root".to_string(), PathBuf::from("/".to_string()));
+        registry.insert(tree_name.clone(), PathBuf::from("/".to_string()));
 
         Tree{
             name: tree_name,
@@ -199,17 +199,10 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
     }
 
 
-    ///Merges `tree` into `self` leaving `tree` empty at the node with a `name`. Returns Ok(k) if
+    ///Merges `self` into `tree` at the node with a `name`. Returns Ok(k) if
     /// everything went all right or Err(e) if something went wrong.
+    /// NOTE: All values and attributes are cloned.
     pub fn join(&mut self, tree: &Self, name: String) -> Result<(),NodeErrors>{
-
-        /*TODO
-        Implement a take() - T for nodes, then a recursive functions which adds self
-        to the tree after checking the name, then adds all children to self
-        the returns
-        NOTE we can actually use the from add() returned string as the new parent name when
-        going through the children
-        */
 
         //Try to get the root node, add it at "name", get the actual returning name, add the children there etc
         let new_root_name = {
@@ -222,9 +215,18 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
        };
 
 
+       let mut return_val = Ok(());
 
         //now for all root children, add them to the "new_root_name" and redo the procedure
-        tree.root_node.join(self, new_root_name)
+        for (_, child) in tree.root_node.children.iter(){
+            match child.join(self, new_root_name.clone()){
+                Ok(_) => {},
+                Err(e) => return_val = Err(e),
+            }
+        }
+
+        return_val
+        //tree.root_node.join(self, new_root_name)
     }
 
     ///Prints a debug tree of the things in this tree

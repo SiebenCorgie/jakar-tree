@@ -63,4 +63,6 @@ fn main() {
     }
     println!("TADAA:", );
     one_tree.print_tree();
+    println!("==========", );
+    one_tree.print_registry();
 }
