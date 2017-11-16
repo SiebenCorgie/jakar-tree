@@ -60,6 +60,14 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
         }
     }
 
+    ///Same as `add()` but the `new_child` will atomaticly be added to the root node
+    pub fn add_at_root(&mut self, new_child: T, attributes: Option<A>)->
+    Result<String, NodeErrors>{
+        //get the root name from the tree name (see implementation of the new() function)
+        let root_name = self.name.clone();
+        //now add it there
+        self.add(new_child, root_name, attributes)
+    }
 
     ///Adds a `new_child` at a `parent` node with `Some(attributes)` set
     /// (or the default attributes if None is supplied).
