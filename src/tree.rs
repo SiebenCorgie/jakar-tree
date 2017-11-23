@@ -206,6 +206,14 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
         self.registry.contains_key(&String::from(node_name))
     }
 
+    ///Same as `join()`, but it automaticly integrates `tree` at the root node
+    pub fn join_at_root(&mut self, tree: &Self) -> Result<(),NodeErrors>{
+        //the root name
+        let root_name = self.name.clone();
+        println!("Adding at: {}", root_name);
+        self.join(tree, root_name)
+    }
+
 
     ///Merges `self` into `tree` at the node with a `name`. Returns Ok(k) if
     /// everything went all right or Err(e) if something went wrong.
