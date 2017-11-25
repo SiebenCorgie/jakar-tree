@@ -8,8 +8,13 @@ pub trait Attribute<J: Clone> {
     type Comparer;
     ///Creates a default attribute set
     fn default() -> Self;
-    ///Execute the `job` on `self`.
-    fn execute(&mut self, job: &J);
+    ///Execute the `job` on `self`. And returns the job which should be added to each child.
+    ///Why?
+    /// Well consider the following  case:
+    /// You want to rotate a object, but each child should be rotated in relation to this object.
+    /// With this way you could call `rotate()` on this object, but pass a `rotate_around_point()`
+    /// down to the children.
+    fn execute(&mut self, job: &J) -> J;
     ///Should print the content of self in an readable form.
     fn print_atr(&self, lvl: i32);
     ///Returns true if `self` matches the supplied `attributes`
@@ -115,8 +120,8 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
         job_vec.append(&mut self.jobs);
 
         //now apply it ordered
-        for job in job_vec.iter(){
-            self.attributes.execute(job);
+        for job in job_vec.iter_mut(){
+            *job = self.attributes.execute(&job);
         }
 
         //now send them to the children

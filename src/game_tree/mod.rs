@@ -80,19 +80,24 @@ impl node::Attribute<Jobs> for SceneAttribute{
         }
     }
 
-    fn execute(&mut self, job: &Jobs){
+    fn execute(&mut self, job: &Jobs) -> Jobs{
         match job{
             &Jobs::Translate(t) =>{
                 self.position[0] += t[0];
                 self.position[1] += t[1];
                 self.position[2] += t[2];
+                Jobs::Translate(t)
             } ,
             &Jobs::Rotate(r) => {
                 self.rotation[0] += r[0];
                 self.rotation[1] += r[1];
                 self.rotation[2] += r[2];
+                Jobs::Rotate(r)
             }
-            &Jobs::Scale(s) => self.scale += s,
+            &Jobs::Scale(s) => {
+                self.scale += s;
+                Jobs::Scale(s)
+            },
         }
     }
 
