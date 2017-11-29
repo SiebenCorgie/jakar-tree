@@ -262,6 +262,7 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
         for (k, i) in self.registry.iter(){
             println!("\t {} -> \n \t\t{:?}", k, i);
         }
+        println!("=====\n Tree has {} entries!\n =====", self.registry.len());
     }
 
 }
