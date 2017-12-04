@@ -81,6 +81,8 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
 
     }
 
+    
+
     ///Returns the an `Ok(&mut Node)` at `path` if there is one at this location, or `Err()` if not.
     pub fn get_node(&mut self, path: &mut Vec<String>) -> Result<&mut Self, tree::NodeErrors> {
         //get the name of the child we are searching for if we get an `None` from the pop(),
