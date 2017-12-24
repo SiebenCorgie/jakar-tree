@@ -5,6 +5,7 @@ use std;
 use node;
 
 ///The errors which can appear when adding a new child
+#[derive(Debug)]
 pub enum NodeErrors {
     ///Appears if there is no child with the given search parameter
     NoSuchChild(String),
@@ -183,10 +184,10 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
     }
 
     ///Returns a node with this `name`
-    pub fn get_node(&mut self, name: String) -> Option<&mut node::Node<T, J, A>>{
+    pub fn get_node(&mut self, name: &str) -> Option<&mut node::Node<T, J, A>>{
         //get the nodes path, if there is such a node, return it as Some(T) else return None
         let path = {
-            match self.registry.get(&name){
+            match self.registry.get(name){
                 Some(path) => path.clone(),
                 None => return None,
             }
@@ -211,19 +212,19 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
         //the root name
         let root_name = self.name.clone();
         println!("Adding at: {}", root_name);
-        self.join(tree, root_name)
+        self.join(tree, &root_name)
     }
 
 
     ///Merges `self` into `tree` at the node with a `name`. Returns Ok(k) if
     /// everything went all right or Err(e) if something went wrong.
     /// NOTE: All values and attributes are cloned.
-    pub fn join(&mut self, tree: &Self, name: String) -> Result<(),NodeErrors>{
+    pub fn join(&mut self, tree: &Self, name: &str) -> Result<(),NodeErrors>{
 
         //Try to get the root node, add it at "name", get the actual returning name, add the children there etc
         let new_root_name = {
             match self.add(
-               tree.root_node.value.clone(), name, Some(tree.root_node.attributes.clone())
+               tree.root_node.value.clone(), name.to_string(), Some(tree.root_node.attributes.clone())
            ){
                Ok(new_name) => new_name,
                Err(r) => return Err(r),
