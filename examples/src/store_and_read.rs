@@ -3,6 +3,7 @@ extern crate jakar_tree;
 use jakar_tree::*;
 use jakar_tree::node::Attribute;
 
+mod game_tree;
 
 fn main() {
 
@@ -28,13 +29,13 @@ fn main() {
         }
     }
 
-    match tree.get_node("Test".to_string()){
+    match tree.get_node("Test"){
         Some(n) => n.add_job(game_tree::Jobs::Translate([1.0, 0.0, 0.25])),
         None => {}
     }
 
 
-    match tree.get_node("Test_MyPeopleNeedMe".to_string()){
+    match tree.get_node("Test_MyPeopleNeedMe"){
         Some(n) => n.add_job(game_tree::Jobs::Rotate([0.01, 0.0, 0.35])),
         None => {}
     }

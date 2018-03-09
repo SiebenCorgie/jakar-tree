@@ -2,6 +2,7 @@
 extern crate jakar_tree;
 use jakar_tree::*;
 use jakar_tree::node::Attribute;
+mod game_tree;
 
 
 fn main() {
@@ -57,7 +58,7 @@ fn main() {
     two_tree.print_tree();
 
     println!("JOINING!", );
-    match one_tree.join(&two_tree, "One_One_One_Sub_One".to_string()){
+    match one_tree.join(&two_tree, "One_One_One_Sub_One"){
         Ok(_) => {},
         Err(r) => println!("{:?}", r.to_string()),
     }
