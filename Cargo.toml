@@ -12,3 +12,7 @@ path = "examples/src/store_and_read.rs"
 [[example]]
 name = "merge"
 path = "examples/src/tree_merge.rs"
+
+[[example]]
+name = "speed"
+path = "examples/src/speed.rs"
