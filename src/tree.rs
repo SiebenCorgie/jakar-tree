@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
+use std::time::Instant;
 use std;
 
 use node;
@@ -40,6 +41,9 @@ pub struct Tree<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + 
     pub registry: BTreeMap<String, PathBuf>,
     ///The root node of this tree
     pub root_node: node::Node<T, J, A>,
+    ///Keeps track of the last tick time.
+    last_tick: Instant,
+
 }
 
 ///Implements the base functions of `Tree`
@@ -58,6 +62,7 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
             name: tree_name,
             registry: registry,
             root_node: root_node,
+            last_tick: Instant::now(),
         }
     }
 
@@ -161,7 +166,11 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
 
     ///Updates the whole tree
     pub fn update(&mut self){
-        self.root_node.update(&Vec::new());
+        //Get the new time since the last tick
+        let time = self.last_tick.elapsed().subsec_nanos() as f32 / 1_000_000_000.0;
+        self.last_tick = Instant::now();
+
+        self.root_node.update(time, &Vec::new());
     }
 
     ///Returns a mutable reference to a child by its `path`

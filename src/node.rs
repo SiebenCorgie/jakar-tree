@@ -1,5 +1,37 @@
 use std::collections::BTreeMap;
 use tree;
+use std::sync::{Arc, Mutex};
+
+///The trait defining the callback type
+pub trait DeltaCallbackNode<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
+    fn execute(&mut self, delta: f32, attributes: &mut Node<T,J,A>);
+}
+
+///The typical container which will hold the callback.
+#[derive(Clone)]
+pub struct CallbackContainer<C> {
+    callback: C,
+}
+
+///To create a new callback do something like this:
+///```
+/// let call = CallbackContainer::new(|x: f32|{
+///     println!("Got a callback after {}sec", x);
+///});
+/// ```
+impl<C> CallbackContainer<C>{
+    pub fn new(new: C) ->Self{
+        CallbackContainer{
+            callback: new,
+        }
+    }
+}
+
+impl<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone, C: FnMut(f32, &mut Node<T,J,A>)> DeltaCallbackNode<T,J,A> for CallbackContainer<C>{
+    fn execute(&mut self, delta: f32, attributes: &mut Node<T,J,A>){
+        (self.callback)(delta, attributes);
+    }
+}
 
 
 ///Attributes of an object can be anything. But they must be able to perform the Jobs `J` and to compare them self to C
@@ -47,6 +79,12 @@ pub struct Node<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
     pub jobs: Vec<J>,
     ///Can contain any type of attributes. Any `Job` can be applied to an attributes field.
     pub attributes: A,
+    ///You can store a closure here which gets executed when the node is updated. The closure has
+    /// to have the type `FnMut(f32, Node<T,J,A>)`.
+    /// as you can see it is possible to access every part of the node as well as the time since the
+    /// last update via the `f32`.
+    pub tick_closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A>>>>
+
 }
 
 impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
@@ -61,6 +99,7 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
             children: BTreeMap::new(),
             jobs: Vec::new(),
             attributes: attribute,
+            tick_closure: None,
         }
     }
 
@@ -75,13 +114,14 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
             children: BTreeMap::new(),
             jobs: Vec::new(),
             attributes: attribute,
+            tick_closure: None,
         };
         //add the child to self
         self.children.insert(name, new_child_node);
 
     }
 
-    
+
 
     ///Returns the an `Ok(&mut Node)` at `path` if there is one at this location, or `Err()` if not.
     pub fn get_node(&mut self, path: &mut Vec<String>) -> Result<&mut Self, tree::NodeErrors> {
@@ -113,8 +153,8 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
     }
 
     ///Applys `parent_jobs` first, then applies the jobs of `self.jobs`,
-    /// finally sends both to all children.
-    pub fn update(&mut self, parent_jobs: &Vec<J>){
+    /// finally sends both to all children. `delta` is the time in seconds since the last update.
+    pub fn update(&mut self, delta: f32, parent_jobs: &Vec<J>){
         //first construct the final job vector to apply.
         //we clone the job because we don't want to apply jobs of one children to all children.
         // the append(self.jobs) will also empty self.jobs. This leaves room for adding new ones.
@@ -128,7 +168,7 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
 
         //now send them to the children
         for (_, child) in self.children.iter_mut(){
-            child.update(&job_vec);
+            child.update(delta, &job_vec);
         }
     }
 
