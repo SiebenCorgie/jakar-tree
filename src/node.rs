@@ -66,6 +66,7 @@ pub trait NodeContent {
     fn get_name(&self) -> String;
 }
 
+
 ///Describes a node for a `Tree`. Each Node can have child nodes as well as ONE value.
 #[derive(Clone)]
 pub struct Node<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
@@ -83,9 +84,10 @@ pub struct Node<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
     /// to have the type `FnMut(f32, Node<T,J,A>)`.
     /// as you can see it is possible to access every part of the node as well as the time since the
     /// last update via the `f32`.
-    pub tick_closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A>>>>
+    pub tick_closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>
 
 }
+
 
 impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
     ///Create a new node from a `value` and an `attribute`, returns this node.
@@ -105,7 +107,7 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
 
 
     ///Adds `new` as child of `self` with `attribte`.
-    pub fn add_with_name(&mut self, new: T, name: String, attribute: A){
+    pub fn add_with_name(&mut self, new: T, name: String, attribute: A, closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>){
 
         //Create the node from child
         let new_child_node = Node{
@@ -114,14 +116,18 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
             children: BTreeMap::new(),
             jobs: Vec::new(),
             attributes: attribute,
-            tick_closure: None,
+            tick_closure: closure,
         };
         //add the child to self
         self.children.insert(name, new_child_node);
 
     }
 
-
+    ///Allows a user to set the tick closure of this node.
+    pub fn set_tick<C>(&mut self, closure: C) where C: 'static + FnMut(f32, &mut Node<T,J,A>) + Send + Sync{
+        let container = CallbackContainer::new(closure);
+        self.tick_closure = Some(Arc::new(Mutex::new(container)));
+    }
 
     ///Returns the an `Ok(&mut Node)` at `path` if there is one at this location, or `Err()` if not.
     pub fn get_node(&mut self, path: &mut Vec<String>) -> Result<&mut Self, tree::NodeErrors> {
@@ -152,9 +158,29 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
         node_with_name.get_node(path)
     }
 
-    ///Applys `parent_jobs` first, then applies the jobs of `self.jobs`,
+    //First, executes the tick clusre if there is any. Then
+    /// applys `parent_jobs` first, then applies the jobs of `self.jobs`,
     /// finally sends both to all children. `delta` is the time in seconds since the last update.
     pub fn update(&mut self, delta: f32, parent_jobs: &Vec<J>){
+
+        let (has_closure, closure) = {
+            match self.tick_closure{
+                Some(ref mut funct) => {
+                    let loc_fun = funct.clone();
+                    (true, Some(loc_fun))
+                }
+                None => {(false, None)},
+            }
+        };
+
+        if has_closure{
+            let clos = closure.expect("won't happen");
+            let mut unlocked_fun = clos.lock().expect("failed to lock closure");
+            unlocked_fun.execute(delta, self);
+        }
+
+
+
         //first construct the final job vector to apply.
         //we clone the job because we don't want to apply jobs of one children to all children.
         // the append(self.jobs) will also empty self.jobs. This leaves room for adding new ones.
@@ -193,7 +219,7 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
         // current hierachy.
         let new_name =
         match parent_tree.add(
-            self.value.clone(), parent_node, Some(self.attributes.clone())
+            self.value.clone(), parent_node, Some(self.attributes.clone()), self.tick_closure.clone()
         ){
             Ok(new_n) => new_n,
             Err(er) => return Err(er),

@@ -11,7 +11,8 @@ mod game_tree;
 
 extern crate jakar_tree;
 use jakar_tree::*;
-use jakar_tree::node::Attribute;
+use jakar_tree::node::*;
+use jakar_tree::node::Node;
 
 use std::time::Instant;
 
@@ -29,10 +30,19 @@ fn main(){
 
     let mut time = Instant::now();
 
+    let mut name = String::from("Tedd");
+
     for one in 0..levels[0]{
 
         let one_node = game_tree::DefaultContent::Mesh(one.to_string() + "_mesh");
         let one_node_name = tree.add_at_root(one_node, None).unwrap();
+        {
+            tree.get_node(&one_node_name).unwrap().set_tick(|delta: f32, atr: &mut Node<game_tree::DefaultContent, game_tree::Jobs, game_tree::SceneAttribute>|{
+                println!("Fuck Iam in a closure after {}sec and {}things",delta, atr.attributes.scale );
+            });
+        }
+
+        name = one_node_name.clone();
 
         for two in 0..levels[1]{
             let two_node = game_tree::DefaultContent::Mesh(two.to_string() + "_mesh");
@@ -55,6 +65,10 @@ fn main(){
     //tree.print_tree();
     let _ = tree.get_node("Teddy");
     println!("Needed {}ms to get a non existent node!", time.elapsed().subsec_nanos() as f32 / 1_000_000.0);
+
+    tree.update();
+    tree.get_node(&name).unwrap().attributes.scale = 10.0;
+    tree.update();
 
     let mut new_tree = tree::Tree::new(
         game_tree::DefaultContent::Light("RootNodeDuos".to_string()),

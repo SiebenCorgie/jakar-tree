@@ -1,10 +1,11 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::time::Instant;
+use std::sync::{Arc, Mutex};
 use std;
 
 use node;
-
+use node::DeltaCallbackNode;
 ///The errors which can appear when adding a new child
 #[derive(Debug)]
 pub enum NodeErrors {
@@ -67,19 +68,19 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
     }
 
     ///Same as `add()` but the `new_child` will atomaticly be added to the root node
-    pub fn add_at_root(&mut self, new_child: T, attributes: Option<A>)->
+    pub fn add_at_root(&mut self, new_child: T, attributes: Option<A>, closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>)->
     Result<String, NodeErrors>{
         //get the root name from the tree name (see implementation of the new() function)
         let root_name = self.name.clone();
         //now add it there
-        self.add(new_child, root_name, attributes)
+        self.add(new_child, root_name, attributes, closure)
     }
 
     ///Adds a `new_child` at a `parent` node with `Some(attributes)` set
     /// (or the default attributes if None is supplied).
     /// Returns the name under which it was addded as `Ok(name)`
     /// or an `Err(e)` if something went wrong.
-    pub fn add(&mut self, new_child: T, parent_name: String, attributes: Option<A>)->
+    pub fn add(&mut self, new_child: T, parent_name: String, attributes: Option<A>, closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>)->
     Result<String, NodeErrors>{
         //First we have to get the node in this tree with the searched name.
         // If this is successful, we test the new_child's name for being unique.
@@ -148,7 +149,7 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
                     }
                 };
 
-                k.add_with_name(new_child, unique_name.clone(), atrib);
+                k.add_with_name(new_child, unique_name.clone(), atrib, closure);
             },
             //Otherwise return with an error
             Err(e) => {
@@ -233,7 +234,7 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
         //Try to get the root node, add it at "name", get the actual returning name, add the children there etc
         let new_root_name = {
             match self.add(
-               tree.root_node.value.clone(), name.to_string(), Some(tree.root_node.attributes.clone())
+               tree.root_node.value.clone(), name.to_string(), Some(tree.root_node.attributes.clone()), tree.root_node.tick_closure.clone()
            ){
                Ok(new_name) => new_name,
                Err(r) => return Err(r),
