@@ -5,11 +5,11 @@ A rust based graph system which can handle many nodes quiet fast.
 
 ### Storing and reading
 The system is based on the idea of an "registry" system. You got a `tree` which can hold several `node`s in a hierachy.
-The tree struct has a `BTreeMap` which holds the path to a ndoe, keyed by its name. This way, if you want to retrieve a node,
+The tree struct has a `BTreeMap` which holds the path to a node, keyed by its name. This way, if you want to retrieve a node,
 the system can go the "perfect" way to the node.
 
 ### Jobs
-You can assing jobs to a node. A job (like "move 50 units on the x axis") is executed when the `update()` function is called on
+You can assign jobs to a node. A job (like "move 50 units on the x axis") is executed when the `update()` function is called on
 this node or tree. A job get distributed to the children, which means, if you move the parent 50 units, all children will move the 50
 units as well and **After** that execute their own jobs.
 
