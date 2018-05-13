@@ -71,20 +71,20 @@ pub trait NodeContent {
 #[derive(Clone)]
 pub struct Node<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
     ///The name of this node
-    pub name: String,
+    name: String,
     ///The value of this node
-    pub value: T,
+    value: T,
     ///Contains all children of this node sorted by name.
-    pub children: BTreeMap<String, Node<T, J, A>>,
+    children: BTreeMap<String, Node<T, J, A>>,
     ///Contains a list of things this node has to do when updated next
-    pub jobs: Vec<J>,
+    jobs: Vec<J>,
     ///Can contain any type of attributes. Any `Job` can be applied to an attributes field.
-    pub attributes: A,
+    attributes: A,
     ///You can store a closure here which gets executed when the node is updated. The closure has
     /// to have the type `FnMut(f32, Node<T,J,A>)`.
     /// as you can see it is possible to access every part of the node as well as the time since the
     /// last update via the `f32`.
-    pub tick_closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>
+    tick_closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>
 
 }
 
@@ -238,6 +238,54 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
         }
 
         Ok(())
+    }
+
+    ///Returns a copy of the name.
+    pub fn get_name(&self) -> String{
+        self.name.clone()
+    }
+
+    ///Returns a reference to the value of this node
+    pub fn get_value(&self) -> &T{
+        &self.value
+    }
+
+    ///Returns a mutable reference to this nodes value
+    pub fn get_value_mut(&mut self) -> &mut T{
+        &mut self.value
+    }
+
+    ///Returns the current job vector of this node
+    pub fn get_jobs(&self) -> &Vec<J>{
+        &self.jobs
+    }
+
+    ///Returns a reference to the current atrributes.
+    pub fn get_attrib(&self) -> &A{
+        &self.attributes
+    }
+
+    ///Returns a mutable reference to the current atrributes. Keep in mind that
+    /// you usually should change them through jobs since thoose are pushed
+    /// down to the children as well.
+    pub fn get_attrib_mut(&mut self) -> &mut A{
+        &mut self.attributes
+    }
+
+    ///Returns a reference to the children
+    pub fn get_children(&self) -> &BTreeMap<String, Node<T,J,A>>{
+        &self.children
+    }
+
+    ///Returns the children as well, but mutable. Be careful what you do!
+    pub fn get_children_mut(&mut self) -> &mut BTreeMap<String, Node<T,J,A>>{
+        &mut self.children
+    }
+
+
+    ///Returns a copy of the current tick script.
+    pub fn get_tick(&self) -> Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>{
+        self.tick_closure.clone()
     }
 
     ///Prints self and then all children a level down and so on, creates a nice tree print out

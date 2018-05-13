@@ -9,17 +9,17 @@ The tree struct has a `BTreeMap` which holds the path to a ndoe, keyed by its na
 the system can go the "perfect" way to the node.
 
 ### Jobs
-I plan to a add a "Job" system. The idea is, to be able to add jobs like "Move by 50 units in the x direction" to a node. When the
-`update()` funtion is called, the node applies this operation/job and promotes it down to its children. This way the hierachie get
-updated at a defined time and only has to work with each ndoe once.
-My old system was updating the system at each call which can become quiet expensive if you got many jobs per frame.
+You can assing jobs to a node. A job (like "move 50 units on the x axis") is executed when the `update()` function is called on
+this node or tree. A job get distributed to the children, which means, if you move the parent 50 units, all children will move the 50
+units as well and **After** that execute their own jobs.
 
 ## How fast is it?
 Well, I tested the system with ~50 nodes at two levels. The average getting process per node was around 500 nano seconds (on a
 Ryzen 1700x @ 3.4 GHz), which is okay I guess, at least for a single threaded system.
 
 ## Where should it be used?
-I am currently using it in a gema engien. However, the base structs and traits (`node` and `tree`) can be used everywhere.
+I am currently using it in a game engine. However, the base structs and traits (`node` and `tree`) can be used everywhere.
+Most of the internal stuff uses generics, so it should be no problem to implement the system for use somewhere else as well.
 
 ## How do I test?
 The easiest way is to clone the repository and run in either debug or release mode:
@@ -34,4 +34,9 @@ $ cargo run --example simple --release
 for debug mode do:
 ```
 cargo run --example simple
+```
+
+**There is also a speed test with a bit bigger tree and the use of tick function**
+```
+cargo run --example speed
 ```

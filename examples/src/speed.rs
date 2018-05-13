@@ -16,6 +16,9 @@ use jakar_tree::node::Node;
 
 use std::time::Instant;
 
+type NodeType = Node<game_tree::DefaultContent, game_tree::Jobs, game_tree::SceneAttribute>;
+
+
 fn main(){
     //We'll do 4 level with configurable amounts of items. We then get a single item and merge a small
     //tree.
@@ -30,15 +33,15 @@ fn main(){
 
     let mut time = Instant::now();
 
-    let mut name = String::from("Tedd");
+    let mut name = String::from("Teddy");
 
     for one in 0..levels[0]{
 
         let one_node = game_tree::DefaultContent::Mesh(one.to_string() + "_mesh");
-        let one_node_name = tree.add_at_root(one_node, None).unwrap();
+        let one_node_name = tree.add_at_root(one_node, None, None).unwrap();
         {
-            tree.get_node(&one_node_name).unwrap().set_tick(|delta: f32, atr: &mut Node<game_tree::DefaultContent, game_tree::Jobs, game_tree::SceneAttribute>|{
-                println!("Fuck Iam in a closure after {}sec and {}things",delta, atr.attributes.scale );
+            tree.get_node(&one_node_name).unwrap().set_tick(|delta: f32, atr: &mut NodeType|{
+                println!("Fuck Iam in a closure after {}sec and {}things",delta, atr.get_attrib().scale );
             });
         }
 
@@ -46,15 +49,15 @@ fn main(){
 
         for two in 0..levels[1]{
             let two_node = game_tree::DefaultContent::Mesh(two.to_string() + "_mesh");
-            let two_node_name = tree.add(two_node, one_node_name.clone(), None).unwrap();
+            let two_node_name = tree.add(two_node, one_node_name.clone(), None, None).unwrap();
 
             for three in 0..levels[2]{
                 let three_node = game_tree::DefaultContent::Mesh(three.to_string() + "_mesh");
-                let three_node_name = tree.add(three_node, two_node_name.clone(), None).unwrap();
+                let three_node_name = tree.add(three_node, two_node_name.clone(), None, None).unwrap();
 
                 for four in 0..levels[3]{
                     let four_node = game_tree::DefaultContent::Mesh(four.to_string() + "_mesh");
-                    let four_node_name = tree.add(four_node, three_node_name.clone(), None).unwrap();
+                    let four_node_name = tree.add(four_node, three_node_name.clone(), None, None).unwrap();
                 }
             }
         }
@@ -67,7 +70,7 @@ fn main(){
     println!("Needed {}ms to get a non existent node!", time.elapsed().subsec_nanos() as f32 / 1_000_000.0);
 
     tree.update();
-    tree.get_node(&name).unwrap().attributes.scale = 10.0;
+    tree.get_node(&name).unwrap().get_attrib_mut().scale = 10.0;
     tree.update();
 
     let mut new_tree = tree::Tree::new(
@@ -77,18 +80,22 @@ fn main(){
 
     new_tree.add_at_root(
         game_tree::DefaultContent::Light("MeshyMeshMesh".to_string()),
+        None,
         None
     );
     new_tree.add_at_root(
         game_tree::DefaultContent::Mesh("MeshyTheSecond".to_string()),
+        None,
         None
     );
     new_tree.add_at_root(
         game_tree::DefaultContent::Light("Tedberg".to_string()),
+        None,
         None
     );
     new_tree.add_at_root(
         game_tree::DefaultContent::Light("Rudolf".to_string()),
+        None,
         None
     );
 

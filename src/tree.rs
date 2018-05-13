@@ -234,7 +234,10 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
         //Try to get the root node, add it at "name", get the actual returning name, add the children there etc
         let new_root_name = {
             match self.add(
-               tree.root_node.value.clone(), name.to_string(), Some(tree.root_node.attributes.clone()), tree.root_node.tick_closure.clone()
+               tree.root_node.get_value().clone(),
+               name.to_string(),
+               Some(tree.root_node.get_attrib().clone()),
+               tree.root_node.get_tick().clone()
            ){
                Ok(new_name) => new_name,
                Err(r) => return Err(r),
@@ -245,7 +248,7 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
        let mut return_val = Ok(());
 
         //now for all root children, add them to the "new_root_name" and redo the procedure
-        for (_, child) in tree.root_node.children.iter(){
+        for (_, child) in tree.root_node.get_children().iter(){
             match child.join(self, new_root_name.clone()){
                 Ok(_) => {},
                 Err(e) => return_val = Err(e),
