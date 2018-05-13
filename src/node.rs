@@ -123,6 +123,19 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
 
     }
 
+    ///Copys the name, value, attributes and tick closure into a new node object. Children and jobs are
+    /// reseted.
+    pub fn copy(&self) -> Self{
+        Node{
+            name: self.name.clone(),
+            value: self.value.clone(),
+            children: BTreeMap::new(),
+            jobs: Vec::new(),
+            attributes: self.attributes.clone(),
+            tick_closure: self.tick_closure.clone()
+        }
+    }
+
     ///Allows a user to set the tick closure of this node.
     pub fn set_tick<C>(&mut self, closure: C) where C: 'static + FnMut(f32, &mut Node<T,J,A>) + Send + Sync{
         let container = CallbackContainer::new(closure);
