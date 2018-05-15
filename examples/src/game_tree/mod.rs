@@ -49,6 +49,17 @@ impl node::NodeContent for DefaultContent{
             }
         }
     }
+
+    fn update<Jobs>(&mut self, jobs: &mut Vec<Jobs>){
+        match self{
+            &mut DefaultContent::Light(ref light) => {
+                println!("I am a light {}!", light);
+            }
+            &mut DefaultContent::Mesh(ref mesh) => {
+                println!("I am a mesh {}!", mesh);
+            }
+        }
+    }
 }
 
 

@@ -2,36 +2,6 @@ use std::collections::BTreeMap;
 use tree;
 use std::sync::{Arc, Mutex};
 
-///The trait defining the callback type
-pub trait DeltaCallbackNode<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
-    fn execute(&mut self, delta: f32, attributes: &mut Node<T,J,A>);
-}
-
-///The typical container which will hold the callback.
-#[derive(Clone)]
-pub struct CallbackContainer<C> {
-    callback: C,
-}
-
-///To create a new callback do something like this:
-///```
-/// let call = CallbackContainer::new(|x: f32|{
-///     println!("Got a callback after {}sec", x);
-///});
-/// ```
-impl<C> CallbackContainer<C>{
-    pub fn new(new: C) ->Self{
-        CallbackContainer{
-            callback: new,
-        }
-    }
-}
-
-impl<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone, C: FnMut(f32, &mut Node<T,J,A>)> DeltaCallbackNode<T,J,A> for CallbackContainer<C>{
-    fn execute(&mut self, delta: f32, attributes: &mut Node<T,J,A>){
-        (self.callback)(delta, attributes);
-    }
-}
 
 
 ///Attributes of an object can be anything. But they must be able to perform the Jobs `J` and to compare them self to C
@@ -64,6 +34,8 @@ pub trait Attribute<J: Clone> {
 pub trait NodeContent {
     ///Should return the name of this content
     fn get_name(&self) -> String;
+    ///Gets called on an update of this node. gets the `jobs` of this node. Be sure to spawn threads for heavyer work load.
+    fn update<J>(&mut self, jobs: &mut Vec<J>);
 }
 
 
@@ -80,12 +52,6 @@ pub struct Node<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
     jobs: Vec<J>,
     ///Can contain any type of attributes. Any `Job` can be applied to an attributes field.
     attributes: A,
-    ///You can store a closure here which gets executed when the node is updated. The closure has
-    /// to have the type `FnMut(f32, Node<T,J,A>)`.
-    /// as you can see it is possible to access every part of the node as well as the time since the
-    /// last update via the `f32`.
-    tick_closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>
-
 }
 
 
@@ -101,13 +67,12 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
             children: BTreeMap::new(),
             jobs: Vec::new(),
             attributes: attribute,
-            tick_closure: None,
         }
     }
 
 
     ///Adds `new` as child of `self` with `attribte`.
-    pub fn add_with_name(&mut self, new: T, name: String, attribute: A, closure: Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>){
+    pub fn add_with_name(&mut self, new: T, name: String, attribute: A){
 
         //Create the node from child
         let new_child_node = Node{
@@ -116,7 +81,6 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
             children: BTreeMap::new(),
             jobs: Vec::new(),
             attributes: attribute,
-            tick_closure: closure,
         };
         //add the child to self
         self.children.insert(name, new_child_node);
@@ -132,14 +96,7 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
             children: BTreeMap::new(),
             jobs: Vec::new(),
             attributes: self.attributes.clone(),
-            tick_closure: self.tick_closure.clone()
         }
-    }
-
-    ///Allows a user to set the tick closure of this node.
-    pub fn set_tick<C>(&mut self, closure: C) where C: 'static + FnMut(f32, &mut Node<T,J,A>) + Send + Sync{
-        let container = CallbackContainer::new(closure);
-        self.tick_closure = Some(Arc::new(Mutex::new(container)));
     }
 
     ///Returns the an `Ok(&mut Node)` at `path` if there is one at this location, or `Err()` if not.
@@ -171,27 +128,13 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
         node_with_name.get_node(path)
     }
 
-    //First, executes the tick clusre if there is any. Then
-    /// applys `parent_jobs` first, then applies the jobs of `self.jobs`,
+
+    /// Applys `parent_jobs` first, then applies the jobs of `self.jobs`,
     /// finally sends both to all children. `delta` is the time in seconds since the last update.
+    ///It will also execute the update function of this nodes value.
     pub fn update(&mut self, delta: f32, parent_jobs: &Vec<J>){
 
-        let (has_closure, closure) = {
-            match self.tick_closure{
-                Some(ref mut funct) => {
-                    let loc_fun = funct.clone();
-                    (true, Some(loc_fun))
-                }
-                None => {(false, None)},
-            }
-        };
-
-        if has_closure{
-            let clos = closure.expect("won't happen");
-            let mut unlocked_fun = clos.lock().expect("failed to lock closure");
-            unlocked_fun.execute(delta, self);
-        }
-
+        self.value.update(&mut self.jobs);
 
 
         //first construct the final job vector to apply.
@@ -232,7 +175,9 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
         // current hierachy.
         let new_name =
         match parent_tree.add(
-            self.value.clone(), parent_node, Some(self.attributes.clone()), self.tick_closure.clone()
+            self.value.clone(),
+            parent_node,
+            Some(self.attributes.clone())
         ){
             Ok(new_n) => new_n,
             Err(er) => return Err(er),
@@ -293,12 +238,6 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
     ///Returns the children as well, but mutable. Be careful what you do!
     pub fn get_children_mut(&mut self) -> &mut BTreeMap<String, Node<T,J,A>>{
         &mut self.children
-    }
-
-
-    ///Returns a copy of the current tick script.
-    pub fn get_tick(&self) -> Option<Arc<Mutex<DeltaCallbackNode<T,J,A> + Send + Sync>>>{
-        self.tick_closure.clone()
     }
 
     ///Prints self and then all children a level down and so on, creates a nice tree print out

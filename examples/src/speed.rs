@@ -38,26 +38,21 @@ fn main(){
     for one in 0..levels[0]{
 
         let one_node = game_tree::DefaultContent::Mesh(one.to_string() + "_mesh");
-        let one_node_name = tree.add_at_root(one_node, None, None).unwrap();
-        {
-            tree.get_node(&one_node_name).unwrap().set_tick(|delta: f32, atr: &mut NodeType|{
-                println!("Fuck Iam in a closure after {}sec and {}things",delta, atr.get_attrib().scale );
-            });
-        }
+        let one_node_name = tree.add_at_root(one_node, None).unwrap();
 
         name = one_node_name.clone();
 
         for two in 0..levels[1]{
             let two_node = game_tree::DefaultContent::Mesh(two.to_string() + "_mesh");
-            let two_node_name = tree.add(two_node, one_node_name.clone(), None, None).unwrap();
+            let two_node_name = tree.add(two_node, one_node_name.clone(), None).unwrap();
 
             for three in 0..levels[2]{
                 let three_node = game_tree::DefaultContent::Mesh(three.to_string() + "_mesh");
-                let three_node_name = tree.add(three_node, two_node_name.clone(), None, None).unwrap();
+                let three_node_name = tree.add(three_node, two_node_name.clone(), None).unwrap();
 
                 for four in 0..levels[3]{
                     let four_node = game_tree::DefaultContent::Mesh(four.to_string() + "_mesh");
-                    let four_node_name = tree.add(four_node, three_node_name.clone(), None, None).unwrap();
+                    let four_node_name = tree.add(four_node, three_node_name.clone(), None).unwrap();
                 }
             }
         }
@@ -80,22 +75,18 @@ fn main(){
 
     new_tree.add_at_root(
         game_tree::DefaultContent::Light("MeshyMeshMesh".to_string()),
-        None,
         None
     );
     new_tree.add_at_root(
         game_tree::DefaultContent::Mesh("MeshyTheSecond".to_string()),
-        None,
         None
     );
     new_tree.add_at_root(
         game_tree::DefaultContent::Light("Tedberg".to_string()),
-        None,
         None
     );
     new_tree.add_at_root(
         game_tree::DefaultContent::Light("Rudolf".to_string()),
-        None,
         None
     );
 
