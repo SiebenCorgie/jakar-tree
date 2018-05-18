@@ -37,8 +37,12 @@ fn main(){
 
     for one in 0..levels[0]{
 
-        let one_node = game_tree::DefaultContent::Mesh(one.to_string() + "_mesh");
+        let mut one_node = game_tree::DefaultContent::Mesh(one.to_string() + "_mesh");
         let one_node_name = tree.add_at_root(one_node, None).unwrap();
+        match tree.get_node(&one_node_name){
+            Some(nod) => nod.set_controller(game_tree::MeshController{}),
+            None => {},
+        }
 
         name = one_node_name.clone();
 

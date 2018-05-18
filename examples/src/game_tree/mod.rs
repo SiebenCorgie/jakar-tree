@@ -1,4 +1,9 @@
 use node;
+use tree;
+
+///A public type which makes it easier to specifie a tree type
+pub type TreeType = tree::Tree<DefaultContent, Jobs, SceneAttribute>;
+
 
 ///A sample implementation of NodeContent
 #[derive(Clone)]
@@ -6,7 +11,6 @@ pub enum DefaultContent {
     Mesh(String),
     Light(String),
 }
-
 
 ///A sample struct to show how a comapre sequenz can be cosntructed at the `attributes` implementation
 /// for the `compare()` funtion.
@@ -35,6 +39,41 @@ impl DefaultContent{
     }
 }
 
+///A sample controller for meshes
+pub struct MeshController {
+}
+
+
+
+///A node controller implementation based on the Mesh Controller
+impl<T,J,A> node::NodeController<T,J,A> for MeshController
+where
+T: node::NodeContent + Clone,
+J: Clone,
+A: node::Attribute<J> + Clone
+{
+    fn update(&mut self, node: &mut node::Node<T,J,A>){
+        println!("Updating a mesh with name {}!", node.get_name());
+    }
+}
+
+///And one more controller
+pub struct LightController {
+}
+///And its implementation...
+impl<T,J,A> node::NodeController<T,J,A> for LightController
+where
+T: node::NodeContent + Clone,
+J: Clone,
+A: node::Attribute<J> + Clone
+{
+    fn update(&mut self, node: &mut node::Node<T,J,A>){
+        println!("Updating a light with name {}!", node.get_name());
+    }
+}
+
+
+
 
 ///The implementation of the NodeContent for the DefaultContent
 impl node::NodeContent for DefaultContent{
@@ -46,17 +85,6 @@ impl node::NodeContent for DefaultContent{
             }
             &DefaultContent::Light(ref x) =>{
                 x.clone()
-            }
-        }
-    }
-
-    fn update<Jobs>(&mut self, jobs: &mut Vec<Jobs>){
-        match self{
-            &mut DefaultContent::Light(ref light) => {
-                println!("I am a light {}!", light);
-            }
-            &mut DefaultContent::Mesh(ref mesh) => {
-                println!("I am a mesh {}!", mesh);
             }
         }
     }
@@ -79,7 +107,8 @@ pub struct SceneAttribute {
     pub rotation: [f32; 3],
     pub scale: f32,
 }
-
+///The implementation which qualifies this as a ndoe attribute. Be sure to implement the comparing
+/// correctly
 impl node::Attribute<Jobs> for SceneAttribute{
     type Comparer = DefaultComparer;
 

@@ -1,12 +1,19 @@
 use std::collections::BTreeMap;
 use tree;
 use std::sync::{Arc, Mutex};
+use std::rc::Rc;
+
+///Can controll behavoir of a node. Gets called via the update function at every update
+/// of that node.
+pub trait NodeController<T,J,A> where  T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone{
+    fn update(&mut self, node: &mut Node<T, J, A>);
+}
 
 
 
 ///Attributes of an object can be anything. But they must be able to perform the Jobs `J` and to compare them self to C
 pub trait Attribute<J: Clone> {
-    ///The type used to comapre attributes with each other
+    ///The type used to compare attributes with each other
     type Comparer;
     ///Creates a default attribute set
     fn default() -> Self;
@@ -34,14 +41,16 @@ pub trait Attribute<J: Clone> {
 pub trait NodeContent {
     ///Should return the name of this content
     fn get_name(&self) -> String;
-    ///Gets called on an update of this node. gets the `jobs` of this node. Be sure to spawn threads for heavyer work load.
-    fn update<J>(&mut self, jobs: &mut Vec<J>);
 }
 
 
 ///Describes a node for a `Tree`. Each Node can have child nodes as well as ONE value.
 #[derive(Clone)]
-pub struct Node<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
+pub struct Node<T,J,A>
+    where T: NodeContent + Clone,
+    J: Clone,
+    A: Attribute<J> + Clone,
+{
     ///The name of this node
     name: String,
     ///The value of this node
@@ -52,10 +61,17 @@ pub struct Node<T: NodeContent + Clone, J: Clone, A: Attribute<J> + Clone> {
     jobs: Vec<J>,
     ///Can contain any type of attributes. Any `Job` can be applied to an attributes field.
     attributes: A,
+    ///Can be a controller for this node which gets updated everytime this node is updated
+    controller: Option<Arc<Mutex<NodeController<T,J,A>>>>,
 }
 
 
-impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
+impl<T,J,A> Node<T,J,A>
+    where
+    T: NodeContent + Clone,
+    J:  Clone,
+    A: Attribute<J> + Clone,
+{
     ///Create a new node from a `value` and an `attribute`, returns this node.
     ///The name is retriefed from the nodes `get_name()` function.
     /// #unsave
@@ -67,6 +83,7 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
             children: BTreeMap::new(),
             jobs: Vec::new(),
             attributes: attribute,
+            controller: None,
         }
     }
 
@@ -81,6 +98,7 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
             children: BTreeMap::new(),
             jobs: Vec::new(),
             attributes: attribute,
+            controller: None,
         };
         //add the child to self
         self.children.insert(name, new_child_node);
@@ -96,6 +114,7 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
             children: BTreeMap::new(),
             jobs: Vec::new(),
             attributes: self.attributes.clone(),
+            controller: None,
         }
     }
 
@@ -134,7 +153,10 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
     ///It will also execute the update function of this nodes value.
     pub fn update(&mut self, delta: f32, parent_jobs: &Vec<J>){
 
-        self.value.update(&mut self.jobs);
+        if let Some(control) = self.controller.clone(){
+            let mut cont = control.lock().expect("failed");
+            cont.update(self);
+        }
 
 
         //first construct the final job vector to apply.
@@ -238,6 +260,16 @@ impl<T: NodeContent + Clone, J:  Clone, A: Attribute<J> + Clone> Node<T, J, A>{
     ///Returns the children as well, but mutable. Be careful what you do!
     pub fn get_children_mut(&mut self) -> &mut BTreeMap<String, Node<T,J,A>>{
         &mut self.children
+    }
+
+    ///Returns the current controller of this node. Could be None
+    pub fn get_controller(&self) -> Option<Arc<Mutex<NodeController<T,J,A>>>>{
+        self.controller.clone()
+    }
+
+    ///Sets the inner controller to `Some(new)` controller
+    pub fn set_controller<C>(&mut self, new: C) where C: NodeController<T,J,A> + 'static{
+        self.controller = Some(Arc::new(Mutex::new(new)));
     }
 
     ///Prints self and then all children a level down and so on, creates a nice tree print out

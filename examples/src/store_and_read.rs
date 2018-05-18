@@ -11,7 +11,7 @@ fn main() {
     let root = game_tree::DefaultContent::Light("RootNode".to_string());
 
     // adding a tree
-    let mut tree = tree::Tree::new(root, game_tree::SceneAttribute::default());
+    let mut tree: game_tree::TreeType = tree::Tree::new(root, game_tree::SceneAttribute::default());
 
     //now adding some stuff to "RootNode"
     let things = vec!["Mesh", "Teddy", "other_stuff", "Test", "Moor", "More", "Stuff", "To", "Tetzt"];
