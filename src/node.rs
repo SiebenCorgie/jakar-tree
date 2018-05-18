@@ -62,7 +62,7 @@ pub struct Node<T,J,A>
     ///Can contain any type of attributes. Any `Job` can be applied to an attributes field.
     attributes: A,
     ///Can be a controller for this node which gets updated everytime this node is updated
-    controller: Option<Arc<Mutex<NodeController<T,J,A>>>>,
+    controller: Option<Arc<Mutex<NodeController<T,J,A> + Send >>> ,
 }
 
 
@@ -263,12 +263,12 @@ impl<T,J,A> Node<T,J,A>
     }
 
     ///Returns the current controller of this node. Could be None
-    pub fn get_controller(&self) -> Option<Arc<Mutex<NodeController<T,J,A>>>>{
+    pub fn get_controller(&self) -> Option<Arc<Mutex<NodeController<T,J,A> + Send>>>{
         self.controller.clone()
     }
 
     ///Sets the inner controller to `Some(new)` controller
-    pub fn set_controller<C>(&mut self, new: C) where C: NodeController<T,J,A> + 'static{
+    pub fn set_controller<C>(&mut self, new: C) where C: NodeController<T,J,A> + Send + 'static{
         self.controller = Some(Arc::new(Mutex::new(new)));
     }
 
