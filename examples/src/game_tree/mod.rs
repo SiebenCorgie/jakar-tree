@@ -88,6 +88,9 @@ impl node::NodeContent for DefaultContent{
             }
         }
     }
+    fn update<SceneAttribute>(&mut self, attributes: &SceneAttribute){
+        //println!("UpusDaterus", );
+    }
 }
 
 

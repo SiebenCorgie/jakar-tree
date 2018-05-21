@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use tree;
 use std::sync::{Arc, Mutex};
-use std::rc::Rc;
 
 ///Can controll behavoir of a node. Gets called via the update function at every update
 /// of that node.
@@ -41,6 +40,8 @@ pub trait Attribute<J: Clone> {
 pub trait NodeContent {
     ///Should return the name of this content
     fn get_name(&self) -> String;
+    ///Updates the `NodeContent` of this node with the newest scene attributes.
+    fn update<A>(&mut self, attributes: &A);
 }
 
 
@@ -174,6 +175,9 @@ impl<T,J,A> Node<T,J,A>
         for (_, child) in self.children.iter_mut(){
             child.update(delta, &job_vec);
         }
+
+        //After updating all the children, send the new attributes to the content
+        self.value.update(&self.attributes);
     }
 
     ///Adds a job to this node
