@@ -80,16 +80,13 @@ impl node::NodeContent for DefaultContent{
     ///Should return the name of this content
     fn get_name(&self) -> String{
         match self {
-            &DefaultContent::Mesh(ref x) =>{
+            DefaultContent::Mesh(ref x) =>{
                 x.clone()
             }
-            &DefaultContent::Light(ref x) =>{
+            DefaultContent::Light(ref x) =>{
                 x.clone()
             }
         }
-    }
-    fn update<SceneAttribute>(&mut self, attributes: &SceneAttribute){
-        //println!("UpusDaterus", );
     }
 }
 
