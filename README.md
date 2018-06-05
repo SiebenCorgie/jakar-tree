@@ -1,6 +1,11 @@
 # jakar-tree
 A rust based graph system which can handle many nodes quiet fast.
 
+## MOVED TO GITLAB
+
+Since I am kind of a idealist I moved the whole project including the sub crates to Gitlab:
+https://gitlab.com/Siebencorgie/jakar-engine
+
 ## How does it work?
 
 ### Storing and reading
