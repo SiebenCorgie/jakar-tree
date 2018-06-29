@@ -106,26 +106,29 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
 
         //Testing the childs name
         let unique_name: String = {
-            match self.registry.get(&new_child.get_name()){
+            //Checking for the name. NOTE: to make the system correctly working, we have to
+            // replace dots "." with something. Otherwise the name would make the node's path to a file
+            // which would screw around with the registry
+            match self.registry.get(&new_child.get_name().replace(".", "_")){
                 Some(_) => {
                     //The name is already in there, we have to make a new unique one
                     //Currently we use the easiest way to make it unique by adding an incrementing
                     //number to the end of this name until we can't find a entry with this name+number
                     //then using this name+number as unique name.
                     let mut append_number = 0;
-
+                    let initial_node_name = new_child.get_name().replace(".", "_");
                     while self.registry.get(
-                                &(new_child.get_name().clone() + "_" + &append_number.to_string())
+                                &(initial_node_name.clone() + "_" + &append_number.to_string())
                                             ).is_some()
                     {
                         append_number +=1;
                     }
                     //after finding a good enough number, returning the name
-                    new_child.get_name().clone() + "_" + &append_number.to_string()
+                    initial_node_name.clone() + "_" + &append_number.to_string()
                 },
                 None => {
                     //the name is already unique returing it
-                    new_child.get_name().clone()
+                    new_child.get_name().replace(".", "_").clone()
                 }
             }
         };
@@ -185,8 +188,6 @@ impl<T: node::NodeContent + Clone, J: Clone, A: node::Attribute<J> + Clone> Tree
         if reverse_path.len() == 0{
             return Ok(&mut self.root_node);
         }
-
-        //TODO TEST FOR ROOT NODE IF ROOT NODE, RETURN IT.
 
         self.root_node.get_node(&mut reverse_path)
     }

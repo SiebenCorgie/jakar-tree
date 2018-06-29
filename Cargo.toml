@@ -16,3 +16,7 @@ path = "examples/src/tree_merge.rs"
 [[example]]
 name = "speed"
 path = "examples/src/speed.rs"
+
+[[example]]
+name = "test"
+path = "examples/src/test.rs"
